@@ -162,6 +162,11 @@ public class Catalog {
 
     public Iterator<Integer> tableIdIterator() {
         // TODO: some code goes here
+        ArrayList<Integer> arr = new ArrayList<Integer>(tables.size());
+        for (int i=0; i < tables.size(); i++){
+            arr.add(tables.get(i).file.getId());
+        }
+        Iterator<Integer> it = arr.iterator();
         return null;
     }
 
