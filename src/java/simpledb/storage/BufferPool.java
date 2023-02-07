@@ -1,13 +1,12 @@
 package simpledb.storage;
 
-import simpledb.common.Database;
-import simpledb.common.DbException;
-import simpledb.common.DeadlockException;
-import simpledb.common.Permissions;
+import simpledb.common.*;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -38,6 +37,10 @@ public class BufferPool {
      */
     public static final int DEFAULT_PAGES = 50;
 
+    private ArrayList<Page> pages;
+
+    private int numPages;
+
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
@@ -45,6 +48,8 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // TODO: some code goes here
+        this.pages = new ArrayList<>(numPages);
+        this.numPages = numPages;
     }
 
     public static int getPageSize() {
@@ -78,8 +83,18 @@ public class BufferPool {
      */
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
             throws TransactionAbortedException, DbException {
-        // TODO: some code goes here
-        return null;
+
+        Page target_page = Database.getCatalog().getDatabaseFile((pid.getTableId())).readPage(pid);
+        for(int i=0; i < this.numPages; i++) {
+            if (this.pages.get(i) == null) {
+                this.pages.set(i, target_page);
+                return target_page;x`
+            } else if (this.pages.get(i).getId() == pid) {
+                return target_page;
+            }
+        }
+        throw new DbException("Buffer Full!");
+
     }
 
     /**
