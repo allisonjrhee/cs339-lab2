@@ -3,8 +3,7 @@ package simpledb.storage;
 import simpledb.common.Type;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Tuple maintains information about the contents of a tuple. Tuples have a
@@ -127,7 +126,12 @@ public class Tuple implements Serializable {
      */
     public Iterator<Field> fields() {
         // TODO: some code goes here
-        return null;
+        ArrayList<Field> arr = new ArrayList<Field>(this.tuple.length);
+        for (int i = 0; i < this.tuple.length; i++){
+            arr.add(this.tuple[i]);
+        }
+        Iterator<Field> it = arr.iterator();
+        return it;
     }
 
     /**

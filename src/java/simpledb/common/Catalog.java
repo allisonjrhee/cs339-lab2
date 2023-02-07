@@ -59,21 +59,26 @@ public class Catalog {
         // TODO: some code goes here
         Table newtable = new Table(file, name, pkeyField);
         //finding conflicts
-        int x = -1; //id conflict
-        int y = -1; //name conflict
+        boolean foundid = false;
+        boolean foundname = false;
+        int x = 0;
+        int y = 0; //name conflict
         for (int i = 0; i < tables.size(); i++) {
+            //id conflict, handleDuplicateIds() test in CatalogTest
             if (tables.get(i).file.getId() == file.getId()) {
+                foundid = true;
                 x = i;
             }
+            //name conflict, handleDuplicateNames() test
             if (tables.get(i).name.equals(name)){
+                foundname = true;
                 y = i;
             }
         }
-
-        if (x > -1) {
+        if (foundid == true) {
             tables.set(x,newtable);
         }
-        if (y>-1){
+        if (foundname == true){
             tables.set(y,newtable);
         } else {
             tables.add(newtable);
