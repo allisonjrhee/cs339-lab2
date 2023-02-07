@@ -37,9 +37,9 @@ public class BufferPool {
      */
     public static final int DEFAULT_PAGES = 50;
 
-    private ArrayList<Page> pages;
+    private ArrayList<Page> buff;
 
-    private int numPages;
+    private int pageLimit;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -48,8 +48,8 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // TODO: some code goes here
-        this.pages = new ArrayList<>(numPages);
-        this.numPages = numPages;
+        buff = new ArrayList<Page>();
+        pageLimit = numPages;
     }
 
     public static int getPageSize() {
@@ -83,17 +83,22 @@ public class BufferPool {
      */
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
             throws TransactionAbortedException, DbException {
+        // TODO: some code goes here
 
         Page target_page = Database.getCatalog().getDatabaseFile((pid.getTableId())).readPage(pid);
-        for(int i=0; i < this.numPages; i++) {
-            if (this.pages.get(i) == null) {
-                this.pages.set(i, target_page);
-                return target_page;x`
-            } else if (this.pages.get(i).getId() == pid) {
-                return target_page;
+
+        if (buff.size() < pageLimit) {
+            // if the page is present
+            for (int i = 0; i < this.pageLimit; i++) {
+                if (buff.get(i).getId().equals(pid)) {
+                    return buff.get(i);
+                }
             }
+            buff.add(target_page);
+            return target_page;
+        } else { //the buffer is full
+            throw new DbException("Buffer Full!");
         }
-        throw new DbException("Buffer Full!");
 
     }
 
