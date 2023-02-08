@@ -30,8 +30,14 @@ public class HeapFile implements DbFile {
      * @param f the file that stores the on-disk backing store for this heap
      *          file.
      */
+
+    private File file;
+    private TupleDesc td;
     public HeapFile(File f, TupleDesc td) {
         // TODO: some code goes here
+        this.file = f;
+        this.td = td;
+
     }
 
     /**
@@ -41,7 +47,7 @@ public class HeapFile implements DbFile {
      */
     public File getFile() {
         // TODO: some code goes here
-        return null;
+        return this.file;
     }
 
     /**
@@ -55,7 +61,7 @@ public class HeapFile implements DbFile {
      */
     public int getId() {
         // TODO: some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return this.file.getAbsoluteFile().hashCode();
     }
 
     /**
@@ -64,14 +70,26 @@ public class HeapFile implements DbFile {
      * @return TupleDesc of this DbFile.
      */
     public TupleDesc getTupleDesc() {
-        // TODO: some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return this.td;
     }
 
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
         // TODO: some code goes here
-        return null;
+        int pageNum = pid.getPageNumber();
+        byte[] pageData = new byte[BufferPool.getPageSize()];
+        try {
+            FileInputStream fin = new FileInputStream(file);
+            BufferedInputStream bin = new BufferedInputStream(fin);
+
+            bin.read(pageData, pageNum * BufferPool.getPageSize(), BufferPool.getPageSize());
+            HeapPageId hpid = new HeapPageId(pid.getTableId(), pageNum);
+            return new HeapPage(hpid, pageData);
+        }
+        catch(IOException e) {
+            System.out.println("Error: " + e);
+            return null;
+        }
     }
 
     // see DbFile.java for javadocs
@@ -85,7 +103,9 @@ public class HeapFile implements DbFile {
      */
     public int numPages() {
         // TODO: some code goes here
-        return 0;
+        // file is object arranged into set of pages, so file length / page size?
+        int maxpages = (int)Math.floor(this.file.length()/BufferPool.getPageSize());
+        return maxpages;
     }
 
     // see DbFile.java for javadocs
@@ -105,8 +125,27 @@ public class HeapFile implements DbFile {
     }
 
     // see DbFile.java for javadocs
+
+    private abstract class HeapIterator extends AbstractDbFileIterator {
+        private HeapPage next = null;
+        private HeapPage currPage;
+        private Iterator<Tuple> it;
+        
+        public boolean hasNext() throws DbException, TransactionAbortedException {
+            if (next == null) next = readNext();
+            return next != null;
+        }
+    }
     public DbFileIterator iterator(TransactionId tid) {
         // TODO: some code goes here
+        /**
+         * You will also need to implement the `HeapFile.iterator()` method, which should iterate through through the tuples of each page in the
+         * HeapFile. The iterator must use the `BufferPool.getPage()` method to access pages in the `HeapFile`. This method loads the page into
+         * the buffer pool and will eventually be used (in a later lab) to implement locking-based concurrency control and recovery. Do not load
+         * the entire table into memory on the open() call -- this will cause an out of memory error for very large tables.
+         */
+
+
         return null;
     }
 
