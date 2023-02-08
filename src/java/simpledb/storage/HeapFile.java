@@ -145,16 +145,22 @@ public class HeapFile implements DbFile {
         private TransactionId tid; //because DbFileIterator takes in a tid
 
         private HeapFile hf;
+        private boolean isOpen;
 
         public HeapIterator(HeapFile hf, TransactionId tid) {
             this.tid = tid;
             this.hf = hf;
+            this.isOpen = false;
         }
 
         public void open() throws TransactionAbortedException, DbException {
             //need a page id to call BufferPool.getpage(), use HeapPageID?
             //use this code to read other pages as well
             this.currPageNo = 0;
+            this.isOpen = true;
+            HeapPageId hpId = new HeapPageId(hf.getId(), currPageNo);
+            currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
+            it = currPage.iterator();
 
 //            while (hasNext()) { //need to define hasNext separately?
 //                readNext();
@@ -164,10 +170,13 @@ public class HeapFile implements DbFile {
 
         @Override
         public void close() {
+            super.close();
             // Ensures that a future call to next() will fail
             it = null;
             currPageNo = 0;
-
+            this.hf = null;
+            this.currPage = null;
+            this.isOpen = false;
         }
 
         @Override
@@ -178,23 +187,39 @@ public class HeapFile implements DbFile {
 
         @Override
         protected Tuple readNext() throws DbException, TransactionAbortedException {
+            if (!this.isOpen) { return null;}
+
+//            HeapPageId hpId = new HeapPageId(hf.getId(), currPageNo);
+//            currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
+//            it = currPage.iterator();
+
+            //iterator has a next
+            if (it.hasNext()) {return it.next();}
+
+//            System.out.println("number of pages total = " + hf.numPages());
 
             while (currPageNo < hf.numPages()) {
-                HeapPageId hpId = new HeapPageId(hf.getId(), currPageNo);
-
-                currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
-
-                it = currPage.iterator();
-
-                if (it.hasNext() == false) {
-                    it = null; //end of page
+//                System.out.println("curr page number = " + currPageNo);
+                if (!it.hasNext()) {
+//                    System.out.println("it has no next!");
                     currPageNo++;
+//                    System.out.println("page number is now " + currPageNo);
+                    if (currPageNo >= hf.numPages()){
+//                        System.out.println("returning a null...");
+                        return null;
+                    } else {
+                        HeapPageId hpId = new HeapPageId(hf.getId(), currPageNo);
+                        currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
+                        it = currPage.iterator();
+//                        System.out.println("looping again...");
+                    }
                 } else {
-                    it.next();
+//                    System.out.println("found a next, returning it...");
+                    return it.next();
                 }
             }
-
-            return it.next();
+//            System.out.println("returning a null...");
+            return null;
         }
     }
 

@@ -89,7 +89,7 @@ public class BufferPool {
 
         if (buff.size() < this.pageLimit) {
             // if the page is present
-            for (int i = 0; i < this.pageLimit; i++) {
+            for (int i = 0; i < buff.size(); i++) {
                 if (buff.get(i).getId().equals(pid)) {
                     return buff.get(i);
                 }

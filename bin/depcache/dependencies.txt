@@ -242,7 +242,11 @@ simpledb.storage.BufferPool
 simpledb.storage.HeapPage
 ||:simpledb.HeapFileReadTest
 simpledb.systemtest.SimpleDbTestBase
+java.io.PrintStream
+java.lang.invoke.MethodHandles$Lookup
+java.lang.System
 junit.framework.JUnit4TestAdapter
+java.lang.invoke.MethodHandles
 simpledb.common.Utility
 simpledb.storage.DbFileIterator
 java.lang.Exception
@@ -253,6 +257,7 @@ simpledb.HeapFileReadTest
 simpledb.storage.HeapPageId
 simpledb.storage.HeapFile
 simpledb.common.Database
+java.lang.invoke.StringConcatFactory
 org.junit.Assert
 java.util.NoSuchElementException
 simpledb.storage.HeapPage
