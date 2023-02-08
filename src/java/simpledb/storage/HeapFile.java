@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * HeapFile is an implementation of a DbFile that stores a collection of tuples
@@ -127,23 +128,42 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
 
     private abstract class HeapIterator extends AbstractDbFileIterator {
-        private HeapPage next = null;
-        private HeapPage currPage;
-        private Iterator<Tuple> it;
-        
-        public boolean hasNext() throws DbException, TransactionAbortedException {
-            if (next == null) next = readNext();
-            return next != null;
-        }
-    }
-    public DbFileIterator iterator(TransactionId tid) {
-        // TODO: some code goes here
         /**
          * You will also need to implement the `HeapFile.iterator()` method, which should iterate through through the tuples of each page in the
          * HeapFile. The iterator must use the `BufferPool.getPage()` method to access pages in the `HeapFile`. This method loads the page into
          * the buffer pool and will eventually be used (in a later lab) to implement locking-based concurrency control and recovery. Do not load
          * the entire table into memory on the open() call -- this will cause an out of memory error for very large tables.
          */
+        private HeapPage currPage;
+        private int currPageNo;
+        private HeapPage next = null;
+        private Iterator<Tuple> it; //DbFileIterator should iterate through the tuples of each page in the HeapFile
+        private TransactionId tid; //because DbFileIterator takes in a tid
+
+        public HeapIterator(TransactionId tid) {
+            this.tid = tid;
+            this.currPageNo = 0;
+        }
+        public open(){
+            //need a page id to call BufferPool.getpage(), use HeapPageID?
+            HeapPageId hpid = new HeapPageId(getId(), currPageNo);
+        }
+
+        public Tuple next() throws DbException, TransactionAbortedException,
+                NoSuchElementException {
+            if (next == null) {
+                next = readNext();
+                if (next == null) throw new NoSuchElementException();
+            }
+
+            Tuple result = next;
+            next = null;
+            return result;
+        }
+    }
+    public DbFileIterator iterator(TransactionId tid) {
+        // TODO: some code goes here
+
 
 
         return null;
