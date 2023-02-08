@@ -179,22 +179,25 @@ public class HeapFile implements DbFile {
             if (!isOpen) {
                 return false;
             }
-            if (it.hasNext() != true) { //the tuple iterator does not have a next
+            if (it.hasNext() == true) { //the tuple iterator has a next
+                return true;
+            } else {
                 //we should move to the next page
                 int maxpages = numPages();
                 if (currPageNo + 1 < maxpages) {
                     currPageNo++;
+                    tableId = getId();
                     HeapPageId hpid = new HeapPageId(tableId, currPageNo);
                     currPage = (HeapPage) (dbBUfferPool.getPage(tid, hpid, Permissions.READ_ONLY));
                     it = currPage.iterator();
                     if (it.hasNext() == true) {
                         return true;
                     }
-                } else {
+                } else { //there are no more pages left
                     return false;
                 }
             }
-            return true;
+            return false;
         }
 
         @Override
