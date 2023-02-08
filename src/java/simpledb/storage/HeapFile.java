@@ -139,107 +139,68 @@ public class HeapFile implements DbFile {
          * of memory error for very large tables.
          */
         public HeapPage currPage;
-
         private int currPageNo;
-
-        public int getCurrPageNo() {
-            return currPageNo;
-        }
-
-        private Tuple next = null;
         private Iterator<Tuple> it; //DbFileIterator should iterate through the tuples of each page in the HeapFile
 
         private TransactionId tid; //because DbFileIterator takes in a tid
-        private int tableId;
-        private BufferPool dbBUfferPool;
-        private boolean isOpen;
 
-        public HeapIterator(TransactionId tid) {
+        private HeapFile hf;
+
+        public HeapIterator(HeapFile hf, TransactionId tid) {
             this.tid = tid;
-            this.currPageNo = 0;
-            this.tableId = getId();
-            this.dbBUfferPool = Database.getBufferPool();
+            this.hf = hf;
         }
 
         public void open() throws TransactionAbortedException, DbException {
             //need a page id to call BufferPool.getpage(), use HeapPageID?
             //use this code to read other pages as well
-            this.isOpen = true;
-            HeapPageId hpid = new HeapPageId(this.tableId, this.currPageNo);
-            currPage = (HeapPage) (dbBUfferPool.getPage(this.tid, hpid, Permissions.READ_ONLY));
+            this.currPageNo = 0;
+
 //            while (hasNext()) { //need to define hasNext separately?
 //                readNext();
 //            }
-            this.it = currPage.iterator(); //iterate over the tuples in the page, already have iterator for that in HeapPage
-
-        }
-
-        @Override
-        public boolean hasNext() throws DbException, TransactionAbortedException {
-            if (!isOpen) {
-                return false;
-            }
-            if (it.hasNext() == true) { //the tuple iterator has a next
-                return true;
-            } else {
-                //we should move to the next page
-                int maxpages = numPages();
-                if (currPageNo + 1 < maxpages) {
-                    currPageNo++;
-                    tableId = getId();
-                    HeapPageId hpid = new HeapPageId(tableId, currPageNo);
-                    currPage = (HeapPage) (dbBUfferPool.getPage(tid, hpid, Permissions.READ_ONLY));
-                    it = currPage.iterator();
-                    if (it.hasNext() == true) {
-                        return true;
-                    }
-                } else { //there are no more pages left
-                    return false;
-                }
-            }
-            return false;
+            // it = currPage.iterator(); //iterate over the tuples in the page, already have iterator for that in HeapPage
         }
 
         @Override
         public void close() {
             // Ensures that a future call to next() will fail
-            isOpen = false;
+            it = null;
+            currPageNo = 0;
+
         }
 
         @Override
         public void rewind() throws DbException, TransactionAbortedException {
             close();
-            this.currPageNo = 0;
             open();
         }
 
         @Override
         protected Tuple readNext() throws DbException, TransactionAbortedException {
-            if (isOpen) {
-                if (hasNext()) {
-                    next = it.next();
-                    return next;
+
+            while (currPageNo < hf.numPages()) {
+                HeapPageId hpId = new HeapPageId(hf.getId(), currPageNo);
+
+                currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
+
+                it = currPage.iterator();
+
+                if (it.hasNext() == false) {
+                    it = null; //end of page
+                    currPageNo++;
+                } else {
+                    it.next();
                 }
             }
-            throw new TransactionAbortedException();
-        }
 
-        @Override
-        public Tuple next() throws DbException, TransactionAbortedException,
-                NoSuchElementException {
-            //if
-            if (hasNext() == true) {
-                next = readNext();
-                return next;
-            } else {
-                throw new NoSuchElementException();
-            }
+            return it.next();
         }
     }
 
     public DbFileIterator iterator(TransactionId tid) {
         // TODO: some code goes here
-        return new HeapIterator(tid);
+        return new HeapIterator(this, tid);
 //        HeapIterator it = new HeapIterator(tid);
 //        for (int i=it.getCurrPageNo(); i <= numPages(); i++) {
 //            //Having this throw dbException might change API?
