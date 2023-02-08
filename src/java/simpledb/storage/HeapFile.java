@@ -8,6 +8,7 @@ import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.*;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -105,8 +106,7 @@ public class HeapFile implements DbFile {
     public int numPages() {
         // TODO: some code goes here
         // file is object arranged into set of pages, so file length / page size?
-        int maxpages = (int)Math.floor(this.file.length()/BufferPool.getPageSize());
-        return maxpages;
+        return (int) Math.floor(this.file.length()/BufferPool.getPageSize());
     }
 
     // see DbFile.java for javadocs
@@ -127,46 +127,64 @@ public class HeapFile implements DbFile {
 
     // see DbFile.java for javadocs
 
-    private abstract class HeapIterator extends AbstractDbFileIterator {
+    private class HeapIterator extends AbstractDbFileIterator {
         /**
-         * You will also need to implement the `HeapFile.iterator()` method, which should iterate through through the tuples of each page in the
-         * HeapFile. The iterator must use the `BufferPool.getPage()` method to access pages in the `HeapFile`. This method loads the page into
-         * the buffer pool and will eventually be used (in a later lab) to implement locking-based concurrency control and recovery. Do not load
-         * the entire table into memory on the open() call -- this will cause an out of memory error for very large tables.
+         * You will also need to implement the `HeapFile.iterator()` method,
+         * which should iterate through the tuples of each page in the
+         * HeapFile. The iterator must use the `BufferPool.getPage()` method
+         * to access pages in the `HeapFile`. This method loads the page into
+         * the buffer pool and will eventually be used (in a later lab) to implement
+         * locking-based concurrency control and recovery. Do not load
+         * the entire table into memory on the open() call -- this will cause an out
+         * of memory error for very large tables.
          */
-        private HeapPage currPage;
+        public Page currPage;
+
+        public int getCurrPageNo() {
+            return currPageNo;
+        }
+
         private int currPageNo;
         private HeapPage next = null;
         private Iterator<Tuple> it; //DbFileIterator should iterate through the tuples of each page in the HeapFile
+
         private TransactionId tid; //because DbFileIterator takes in a tid
+        private int tableId = getId();
+        private BufferPool dbBUfferPool = new BufferPool(BufferPool.DEFAULT_PAGES);
 
         public HeapIterator(TransactionId tid) {
             this.tid = tid;
-            this.currPageNo = 0;
+            this.currPageNo = 1;
         }
-        public open(){
+        public void open() throws TransactionAbortedException, DbException {
             //need a page id to call BufferPool.getpage(), use HeapPageID?
-            HeapPageId hpid = new HeapPageId(getId(), currPageNo);
-        }
-
-        public Tuple next() throws DbException, TransactionAbortedException,
-                NoSuchElementException {
-            if (next == null) {
-                next = readNext();
-                if (next == null) throw new NoSuchElementException();
+            HeapPageId hpid = new HeapPageId(tableId, currPageNo);
+            currPage = dbBUfferPool.getPage(tid, hpid, Permissions.valueOf("read"));
+            while (hasNext()) {
+                readNext();
             }
 
-            Tuple result = next;
-            next = null;
-            return result;
+        }
+
+
+        @Override
+        public void rewind() throws DbException, TransactionAbortedException {
+
+        }
+
+        @Override
+        protected Tuple readNext() throws DbException, TransactionAbortedException {
+            return null;
         }
     }
     public DbFileIterator iterator(TransactionId tid) {
         // TODO: some code goes here
-
-
-
-        return null;
+        HeapIterator it = new HeapIterator(tid);
+        for (int i=it.getCurrPageNo(); i <= numPages(); i++) {
+            //Having this throw dbException might change API?
+            it.open();
+        }
+        return it;
     }
 
 }
