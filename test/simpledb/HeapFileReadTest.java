@@ -89,18 +89,20 @@ public class HeapFileReadTest extends SimpleDbTestBase {
         DbFileIterator it = smallFile.iterator(tid);
         // Not open yet
         assertFalse(it.hasNext());
+//        System.out.println("assertFalse(it.hasNext())");
         try {
             it.next();
             fail("expected exception");
-        } catch (NoSuchElementException ignored) {
+        } catch (NoSuchElementException ignored) { //we need to throw NoSuchElementException
         }
-
         it.open();
         int count = 0;
         while (it.hasNext()) {
+            System.out.println("assertNotNull(it.next())");
             assertNotNull(it.next());
             count += 1;
         }
+        System.out.println("assertEquals(3, count)");
         assertEquals(3, count);
         it.close();
     }

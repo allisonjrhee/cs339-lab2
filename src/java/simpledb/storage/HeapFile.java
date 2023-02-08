@@ -30,11 +30,12 @@ public class HeapFile implements DbFile {
      * Constructs a heap file backed by the specified file.
      *
      * @param f the file that stores the on-disk backing store for this heap
-     *          file.
+     * file.
      */
 
     private File file;
     private TupleDesc td;
+
     public HeapFile(File f, TupleDesc td) {
         // TODO: some code goes here
         this.file = f;
@@ -87,8 +88,7 @@ public class HeapFile implements DbFile {
             bin.read(pageData, pageNum * BufferPool.getPageSize(), BufferPool.getPageSize());
             HeapPageId hpid = new HeapPageId(pid.getTableId(), pageNum);
             return new HeapPage(hpid, pageData);
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("Error: " + e);
             return null;
         }
@@ -106,7 +106,7 @@ public class HeapFile implements DbFile {
     public int numPages() {
         // TODO: some code goes here
         // file is object arranged into set of pages, so file length / page size?
-        return (int) Math.floor(this.file.length()/BufferPool.getPageSize());
+        return (int) Math.floor(this.file.length() / BufferPool.getPageSize());
     }
 
     // see DbFile.java for javadocs
@@ -138,54 +138,111 @@ public class HeapFile implements DbFile {
          * the entire table into memory on the open() call -- this will cause an out
          * of memory error for very large tables.
          */
-        public Page currPage;
+        public HeapPage currPage;
+
+        private int currPageNo;
 
         public int getCurrPageNo() {
             return currPageNo;
         }
 
-        private int currPageNo;
-        private HeapPage next = null;
+        private Tuple next = null;
         private Iterator<Tuple> it; //DbFileIterator should iterate through the tuples of each page in the HeapFile
 
         private TransactionId tid; //because DbFileIterator takes in a tid
-        private int tableId = getId();
-        private BufferPool dbBUfferPool = new BufferPool(BufferPool.DEFAULT_PAGES);
+        private int tableId;
+        private BufferPool dbBUfferPool;
+        private boolean isOpen;
 
         public HeapIterator(TransactionId tid) {
             this.tid = tid;
-            this.currPageNo = 1;
+            this.currPageNo = 0;
+            this.tableId = getId();
+            this.dbBUfferPool = Database.getBufferPool();
         }
+
         public void open() throws TransactionAbortedException, DbException {
             //need a page id to call BufferPool.getpage(), use HeapPageID?
-            HeapPageId hpid = new HeapPageId(tableId, currPageNo);
-            currPage = dbBUfferPool.getPage(tid, hpid, Permissions.valueOf("read"));
-            while (hasNext()) {
-                readNext();
-            }
+            //use this code to read other pages as well
+            this.isOpen = true;
+            HeapPageId hpid = new HeapPageId(this.tableId, this.currPageNo);
+            currPage = (HeapPage) (dbBUfferPool.getPage(this.tid, hpid, Permissions.READ_ONLY));
+//            while (hasNext()) { //need to define hasNext separately?
+//                readNext();
+//            }
+            this.it = currPage.iterator(); //iterate over the tuples in the page, already have iterator for that in HeapPage
 
         }
 
+        @Override
+        public boolean hasNext() throws DbException, TransactionAbortedException {
+            if (!isOpen) {
+                return false;
+            }
+            if (it.hasNext() != true) { //the tuple iterator does not have a next
+                //we should move to the next page
+                int maxpages = numPages();
+                if (currPageNo + 1 < maxpages) {
+                    currPageNo++;
+                    HeapPageId hpid = new HeapPageId(tableId, currPageNo);
+                    currPage = (HeapPage) (dbBUfferPool.getPage(tid, hpid, Permissions.READ_ONLY));
+                    it = currPage.iterator();
+                    if (it.hasNext() == true) {
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public void close() {
+            // Ensures that a future call to next() will fail
+            isOpen = false;
+        }
 
         @Override
         public void rewind() throws DbException, TransactionAbortedException {
-
+            close();
+            this.currPageNo = 0;
+            open();
         }
 
         @Override
         protected Tuple readNext() throws DbException, TransactionAbortedException {
-            return null;
+            if (isOpen) {
+                if (hasNext()) {
+                    next = it.next();
+                    return next;
+                }
+            }
+            throw new TransactionAbortedException();
         }
-    }
-    public DbFileIterator iterator(TransactionId tid) {
-        // TODO: some code goes here
-        HeapIterator it = new HeapIterator(tid);
-        for (int i=it.getCurrPageNo(); i <= numPages(); i++) {
-            //Having this throw dbException might change API?
-            it.open();
+
+        @Override
+        public Tuple next() throws DbException, TransactionAbortedException,
+                NoSuchElementException {
+            //if
+            if (hasNext() == true) {
+                next = readNext();
+                return next;
+            } else {
+                throw new NoSuchElementException();
+            }
         }
-        return it;
     }
 
+    public DbFileIterator iterator(TransactionId tid) {
+        // TODO: some code goes here
+        return new HeapIterator(tid);
+//        HeapIterator it = new HeapIterator(tid);
+//        for (int i=it.getCurrPageNo(); i <= numPages(); i++) {
+//            //Having this throw dbException might change API?
+//            it.open();
+//        }
+//        return it;
+    }
 }
 

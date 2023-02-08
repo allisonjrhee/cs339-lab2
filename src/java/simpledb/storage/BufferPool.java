@@ -87,7 +87,7 @@ public class BufferPool {
 
         Page target_page = Database.getCatalog().getDatabaseFile((pid.getTableId())).readPage(pid);
 
-        if (buff.size() < pageLimit) {
+        if (buff.size() < this.pageLimit) {
             // if the page is present
             for (int i = 0; i < this.pageLimit; i++) {
                 if (buff.get(i).getId().equals(pid)) {
