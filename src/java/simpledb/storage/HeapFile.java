@@ -81,7 +81,7 @@ public class HeapFile implements DbFile {
         // TODO: some code goes here
         int pageNum = pid.getPageNumber();
         //pageNum checks
-        if (pageNum < 0 || pageNum > this.numPages()){
+        if (pageNum < 0 || pageNum >= this.numPages()){
             throw new IllegalArgumentException("invalid pid");
         }
         byte[] pageData = new byte[BufferPool.getPageSize()];
@@ -186,6 +186,7 @@ public class HeapFile implements DbFile {
             this.isOpen = true;
             HeapPageId hpId = new HeapPageId(hf.getId(), this.currPageNo);
             this.currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
+            System.out.println(this.currPage);
             it = this.currPage.iterator();
 
 //            while (hasNext()) { //need to define hasNext separately?
@@ -228,7 +229,7 @@ public class HeapFile implements DbFile {
 //                    System.out.println("it has no next!");
                     currPageNo++;
 //                    System.out.println("page number is now " + currPageNo);
-                    if (currPageNo >= hf.numPages()){
+                    if (currPageNo >= (hf.numPages())){
 //                        System.out.println("returning a null...");
                         return null;
                     } else {

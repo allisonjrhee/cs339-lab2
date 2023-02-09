@@ -1,0 +1,13 @@
+﻿CS 339 Lab 2 Writeup
+Allison Rhee and Nate Sowder
+
+
+* Design decisions
+We implemented most methods in a fairly standard manner. The biggest design decision we made was creating a subclass of AbstractDbFileIterator for HeapFile.iterator. We found the abstract methods useful in providing a roadmap to iterate through an entire file. The extension of AbstractDbFileIterator was initially a bit confusing, as many methods had to be defined, most of which ended up being of negligible importance. However, we found the readNext() function to be helpful in defining our iteration task, as it made clear that we were expected to iterate through not only all the tuples on the files, but also all the pages. 
+* API Changes
+We didn’t change the API at all, as per the instructions from Professor Rogers. 
+* Missing or incomplete elements
+Our lab isn’t missing anything that we know of- it passes all the tests. 
+* How long we spent on the lab, difficult or confusing parts
+We spent around 12 hours each on this lab assignment. It was at first really difficult to get started because the lab description was really long and convoluted, and there was definitely a learning curve with IntelliJ. One thing we found really confusing about the lab was the setup instructions – we felt like they could have been more detailed, especially regarding the fact that openjdk@11 isn’t downloaded to the JVM folder. Figuring out how to do that took at least 2 hours for both of us. Otherwise, once we got started and gained some momentum, the first three exercises were relatively straightforward and the lab made more sense as we went along. The difficulty definitely came starting from the HeapFile access methods, especially the iterator in HeapFile.java. That was the biggest design decision we made and it took a lot of debugging and researching to finally figure out. We found that looking at AbstractDbFileIterator was very helpful, as was looking at the test files and using print statements to understand where we were erroring. We think a little more direction in this area would have saved us a lot of time as we felt like it was difficult to figure out what functions to extend. But once that was done, SeqScan was also relatively straightforward.
+We ran into one very persistent bug that we could not figure out for a while until a helpful classmate (Hong Wang) in office hours pointed out to us that it was stemming from our HeapPage getHeaderSize function where we were using Math.ceil on an integer division. But once that was solved we were able to pass all the tests.

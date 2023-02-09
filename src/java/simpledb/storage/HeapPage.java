@@ -89,7 +89,7 @@ public class HeapPage implements Page {
     private int getHeaderSize() {
         // TODO: some code goes here
         int numtups = getNumTuples();
-        return (int)Math.ceil(numtups / 8);
+        return (int)Math.ceil((double)numtups / 8)
 
     }
 
