@@ -80,7 +80,32 @@ public class HeapFile implements DbFile {
     public Page readPage(PageId pid) {
         // TODO: some code goes here
         int pageNum = pid.getPageNumber();
+        //pageNum checks
+        if (pageNum < 0 || pageNum > this.numPages()){
+            throw new IllegalArgumentException("invalid pid");
+        }
         byte[] pageData = new byte[BufferPool.getPageSize()];
+        try {
+            RandomAccessFile raf = new RandomAccessFile(this.file, "r");
+            /**
+             * The pages will be allocated sequentially in the file.
+             * Thus when we open the file, we want to seek to the offset
+             * <page size> * <page_no> to read in the right page.
+             */
+            int offset = BufferPool.getPageSize() * pid.getPageNumber();
+            raf.seek(offset);
+            raf.read(pageData);
+            //returns a page so we need to construct a new page
+            HeapPageId hpid = new HeapPageId(pid.getTableId(), pid.getPageNumber());
+            Page pageread = new HeapPage(hpid, pageData);
+            raf.close();
+            return pageread;
+        } catch (Exception e) {
+            System.out.println("Error: " + e);
+        }
+        return null;
+
+        /* using bufferedinputstream
         try {
             FileInputStream fin = new FileInputStream(file);
             BufferedInputStream bin = new BufferedInputStream(fin);
@@ -92,6 +117,7 @@ public class HeapFile implements DbFile {
             System.out.println("Error: " + e);
             return null;
         }
+         */
     }
 
     // see DbFile.java for javadocs
@@ -151,16 +177,16 @@ public class HeapFile implements DbFile {
             this.tid = tid;
             this.hf = hf;
             this.isOpen = false;
+            this.currPageNo = 0;
         }
 
         public void open() throws TransactionAbortedException, DbException {
             //need a page id to call BufferPool.getpage(), use HeapPageID?
             //use this code to read other pages as well
-            this.currPageNo = 0;
             this.isOpen = true;
-            HeapPageId hpId = new HeapPageId(hf.getId(), currPageNo);
-            currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
-            it = currPage.iterator();
+            HeapPageId hpId = new HeapPageId(hf.getId(), this.currPageNo);
+            this.currPage = (HeapPage) Database.getBufferPool().getPage(tid, hpId, Permissions.READ_ONLY);
+            it = this.currPage.iterator();
 
 //            while (hasNext()) { //need to define hasNext separately?
 //                readNext();
@@ -174,8 +200,6 @@ public class HeapFile implements DbFile {
             // Ensures that a future call to next() will fail
             it = null;
             currPageNo = 0;
-            this.hf = null;
-            this.currPage = null;
             this.isOpen = false;
         }
 

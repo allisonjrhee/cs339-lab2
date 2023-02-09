@@ -7,13 +7,16 @@
     <list default="true" id="af02c927-4a4e-4626-9681-2d95cb3107d1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/depcache/dependencies.txt" beforeDir="false" afterPath="$PROJECT_DIR$/bin/depcache/dependencies.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/src/simpledb/execution/SeqScan.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/src/simpledb/execution/SeqScan.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/src/simpledb/storage/BufferPool.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/src/simpledb/storage/BufferPool.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/src/simpledb/storage/HeapFile$HeapIterator.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/src/simpledb/storage/HeapFile$HeapIterator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/src/simpledb/storage/HeapFile.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/src/simpledb/storage/HeapFile.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/test/simpledb/HeapFileReadTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/test/simpledb/HeapFileReadTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/src/simpledb/storage/RecordId.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/src/simpledb/storage/RecordId.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/cs339-lab21/simpledb/storage/RecordId.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/cs339-lab21/simpledb/storage/RecordId.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/simpledb/execution/SeqScan.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/simpledb/execution/SeqScan.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/java/simpledb/storage/BufferPool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/simpledb/storage/BufferPool.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/java/simpledb/storage/HeapFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/simpledb/storage/HeapFile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/simpledb/HeapFileReadTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/simpledb/HeapFileReadTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/simpledb/storage/RecordId.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/simpledb/storage/RecordId.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

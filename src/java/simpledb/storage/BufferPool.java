@@ -85,8 +85,6 @@ public class BufferPool {
             throws TransactionAbortedException, DbException {
         // TODO: some code goes here
 
-        Page target_page = Database.getCatalog().getDatabaseFile((pid.getTableId())).readPage(pid);
-
         if (buff.size() < this.pageLimit) {
             // if the page is present
             for (int i = 0; i < buff.size(); i++) {
@@ -94,6 +92,7 @@ public class BufferPool {
                     return buff.get(i);
                 }
             }
+            Page target_page = Database.getCatalog().getDatabaseFile((pid.getTableId())).readPage(pid);
             buff.add(target_page);
             return target_page;
         } else { //the buffer is full

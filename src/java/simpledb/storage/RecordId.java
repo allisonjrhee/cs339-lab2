@@ -58,11 +58,10 @@ public class RecordId implements Serializable {
         if (o.getClass() != RecordId.class) {
             return false;
         }
-        // same num of fields
-        if (((RecordId) o).getPageId() != this.pid){
+        if (!(((RecordId) o).pid.equals(this.pid))){
             return false;
         }
-        if (((RecordId) o).getTupleNumber() != this.tupleNo){
+        if (((RecordId) o).tupleNo != this.tupleNo){
             return false;
         }
         return true;
